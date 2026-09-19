@@ -3753,7 +3753,7 @@ body.server-row-drag-active * {
     border: 1px solid var(--border-active);
     border-radius: 6px;
     padding: 32px;
-    width: 420px;
+    width: 368px;
     max-width: 90%;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }

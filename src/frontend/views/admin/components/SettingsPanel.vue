@@ -606,65 +606,6 @@
         <div class="section-title"><span>▸</span> {{ trans.adminLoginSettings }}</div>
 
         <div class="form-group">
-          <div class="checkbox-item">
-            <input type="checkbox" id="cfg_github_oauth_enabled" v-model="settings.github_oauth_enabled">
-            <label><b>{{ trans.enableGithubOAuth }}</b></label>
-            <HelpTooltip :text="trans.githubOAuthTip" />
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group flex-1">
-            <label class="form-label">{{ trans.githubClientId }}</label>
-            <input type="text" name="github_client_id" autocomplete="off" v-model.trim="settings.github_client_id" class="form-input" :placeholder="trans.githubClientIdPlaceholder">
-          </div>
-
-          <div class="form-group flex-1">
-            <label class="form-label">{{ trans.githubClientSecret }}</label>
-            <div class="password-input-wrapper">
-              <input type="text" name="github_client_secret" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" v-model="settings.github_client_secret" :class="['form-input', { 'secret-input-masked': !passwordVisible.githubClientSecret }]" :placeholder="settings.github_client_secret_configured ? trans.secretConfiguredPlaceholder : trans.githubClientSecretPlaceholder">
-              <button type="button" class="password-toggle" @click="$emit('toggle-password', 'githubClientSecret')">
-                {{ passwordVisible.githubClientSecret ? '🙈' : '👁️' }}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">{{ trans.githubBoundAccount }}</label>
-          <div class="inline-help-action">
-            <span class="text-sm">
-              {{ settings.github_user_id
-                ? `${settings.github_user_login ? `@${settings.github_user_login} · ` : ''}ID: ${settings.github_user_id}`
-                : trans.githubNotBound }}
-            </span>
-            <button type="button" class="btn btn-sm" :disabled="!canBindGithub || githubBindingLoading" @click="$emit('bind-github-account')">
-              {{ githubBindingLoading ? '⏳' : (settings.github_user_id ? trans.rebindGithubAccount : trans.bindGithubAccount) }}
-            </button>
-            <HelpTooltip :text="canBindGithub ? trans.githubBindingTip : trans.githubSaveBeforeBinding" />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">
-            {{ trans.githubCallbackUrl }}
-            <HelpTooltip :text="trans.githubCallbackUrlTip" />
-          </label>
-          <div class="flex-center-gap-sm">
-            <input type="text" class="form-input flex-1 github-callback-input" :value="githubCallbackUrl" readonly>
-            <button
-              type="button"
-              class="btn btn-sm"
-              :aria-label="githubCallbackCopied ? trans.copied : trans.copy"
-              :title="githubCallbackCopied ? trans.copied : trans.copy"
-              @click="copyGithubCallbackUrl"
-            >
-              {{ githubCallbackCopied ? `✅ ${trans.copied}` : `📋 ${trans.copy}` }}
-            </button>
-          </div>
-        </div>
-
-        <div class="form-group">
           <label class="form-label">{{ trans.username }}</label>
           <input
             type="text"
@@ -701,7 +642,7 @@
                 data-form-type="other"
                 v-model="settings.password"
                 class="form-input"
-                placeholder="••••••••"
+                :placeholder="settings.password_configured ? '••••••••' : ''"
               >
               <button type="button" class="password-toggle" @click="$emit('toggle-password', 'password')">
                 {{ passwordVisible.password ? '🙈' : '👁️' }}
@@ -722,7 +663,7 @@
                 data-form-type="other"
                 v-model="settings.confirm_password"
                 class="form-input"
-                placeholder="••••••••"
+                :placeholder="settings.password_configured ? '••••••••' : ''"
               >
               <button type="button" class="password-toggle" @click="$emit('toggle-password', 'confirmPassword')">
                 {{ passwordVisible.confirmPassword ? '🙈' : '👁️' }}
@@ -730,6 +671,68 @@
             </div>
           </div>
         </div>
+
+        <div class="form-group">
+          <div class="checkbox-item">
+            <input type="checkbox" id="cfg_github_oauth_enabled" v-model="settings.github_oauth_enabled">
+            <label><b>{{ trans.enableGithubOAuth }}</b></label>
+            <HelpTooltip :text="trans.githubOAuthTip" />
+          </div>
+        </div>
+
+        <template v-if="settings.github_oauth_enabled">
+
+          <div class="form-row">
+            <div class="form-group flex-1">
+              <label class="form-label">{{ trans.githubClientId }}</label>
+              <input type="text" name="github_client_id" autocomplete="off" v-model.trim="settings.github_client_id" class="form-input" :placeholder="trans.githubClientIdPlaceholder">
+            </div>
+
+            <div class="form-group flex-1">
+              <label class="form-label">{{ trans.githubClientSecret }}</label>
+              <div class="password-input-wrapper">
+                <input type="text" name="github_client_secret" autocomplete="off" data-lpignore="true" data-1p-ignore="true" data-bwignore="true" data-form-type="other" v-model="settings.github_client_secret" :class="['form-input', { 'secret-input-masked': !passwordVisible.githubClientSecret }]" :placeholder="settings.github_client_secret_configured ? '••••••••' : ''">
+                <button type="button" class="password-toggle" @click="$emit('toggle-password', 'githubClientSecret')">
+                  {{ passwordVisible.githubClientSecret ? '🙈' : '👁️' }}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">{{ trans.githubBoundAccount }}</label>
+            <div class="inline-help-action">
+              <span class="text-sm">
+                {{ settings.github_user_id
+                  ? `${settings.github_user_login ? `@${settings.github_user_login} · ` : ''}ID: ${settings.github_user_id}`
+                  : trans.githubNotBound }}
+              </span>
+              <button type="button" class="btn btn-sm" :disabled="!canBindGithub || githubBindingLoading" @click="$emit('bind-github-account')">
+                {{ githubBindingLoading ? '⏳' : (settings.github_user_id ? trans.rebindGithubAccount : trans.bindGithubAccount) }}
+              </button>
+              <HelpTooltip :text="canBindGithub ? trans.githubBindingTip : trans.githubSaveBeforeBinding" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">
+              {{ trans.githubCallbackUrl }}
+              <HelpTooltip :text="trans.githubCallbackUrlTip" />
+            </label>
+            <div class="flex-center-gap-sm">
+              <input type="text" class="form-input flex-1 github-callback-input" :value="githubCallbackUrl" readonly>
+              <button
+                type="button"
+                class="btn btn-sm"
+                :aria-label="githubCallbackCopied ? trans.copied : trans.copy"
+                :title="githubCallbackCopied ? trans.copied : trans.copy"
+                @click="copyGithubCallbackUrl"
+              >
+                {{ githubCallbackCopied ? `✅ ${trans.copied}` : `📋 ${trans.copy}` }}
+              </button>
+            </div>
+          </div>
+        </template>
 
       </div>
 

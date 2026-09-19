@@ -542,15 +542,20 @@ const PUBLIC_ADMIN_ACTION_HANDLERS = {
   clear_theme_preview_auth: handleClearThemePreviewAuthAction
 };
 
+export function sanitizeAdminSettings(fullSettings = {}) {
+  const { jwt_secret, github_client_secret, password, ...safeSettings } = fullSettings || {};
+  return {
+    ...safeSettings,
+    password_configured: Boolean(String(password || '').trim()),
+    github_client_secret_configured: Boolean(String(github_client_secret || '').trim())
+  };
+}
+
 async function handleGetSettingsAction({ env, sys, loadFullSettings }) {
   const fullSettings = loadFullSettings ? await loadFullSettings() : sys;
-  const { jwt_secret, github_client_secret, ...safeSettings } = fullSettings || {};
   return createSuccessResponse({
     success: true,
-    settings: {
-      ...safeSettings,
-      github_client_secret_configured: Boolean(String(github_client_secret || '').trim())
-    },
+    settings: sanitizeAdminSettings(fullSettings),
     api_secret: env.API_SECRET
   });
 }
@@ -760,6 +765,9 @@ export async function handleAdminAPI(request, env, sys, loadFullSettings = null,
 
     if (data.action === 'save_settings') {
       const settings = data.settings || {};
+      if (!String(sys?.password || '').trim() && !String(settings.password || '')) {
+        return createBadRequestResponse('passwordRequired');
+      }
       const normalizedThemeUrl = normalizeThemeUrl(settings.theme_url);
       if (normalizedThemeUrl === null) {
         return createBadRequestResponse('invalidThemeUrl');

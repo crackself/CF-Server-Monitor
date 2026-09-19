@@ -972,6 +972,7 @@ const settings = ref({
   cloudflare_token: '',
   jwt_secret: '',
   username: '',
+  password_configured: false,
   password: '',
   confirm_password: '',
   custom_ct: '',
@@ -1481,6 +1482,7 @@ const loadSettings = async () => {
         cloudflare_token: settingsData.cloudflare_token || '',
         jwt_secret: '',
         username: settingsData.username || '',
+        password_configured: settingsData.password_configured === true,
         password: '',
         confirm_password: '',
         custom_ct: settingsData.custom_ct || '',
@@ -1498,7 +1500,7 @@ const loadSettings = async () => {
         csp_api: settingsData.csp_api || ''
       }
       applyMikusThemeOptions(settingsData.theme_options)
-      changeAdminPassword.value = !String(settings.value.username || '').trim()
+      changeAdminPassword.value = !settings.value.password_configured || !String(settings.value.username || '').trim()
       apiSecret.value = data.api_secret || ''
     }
   } catch (e) {
@@ -1566,6 +1568,12 @@ const saveSettings = async () => {
     settings.value.password.length > 0 ||
     settings.value.confirm_password.length > 0
   )
+
+  if (!settings.value.password_configured && !shouldChangePassword) {
+    changeAdminPassword.value = true
+    validationError.value = trans.value.passwordRequired
+    return
+  }
 
   if (shouldChangePassword) {
     if (settings.value.password !== settings.value.confirm_password) {
